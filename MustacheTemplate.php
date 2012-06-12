@@ -53,6 +53,9 @@ class MustacheTemplate
 		$otag = '{{';
 		$ctag = '}}';
 
+		$this->vars = array();
+		$this->partials = array();
+
 		$ris = array(array('_' => null));
 		$t = $this->template;
 		$s = 0;
@@ -97,6 +100,10 @@ class MustacheTemplate
 					// partial
 					$tag = substr($tag, 1);
 					$tag_type = static::RI_PARTIAL;
+					if (!isset($this->partials[$tag])) {
+						$this->partials[$tag] = 0;
+					}
+					++$this->partials[$tag];
 				}
 				if ($tag[0] === '%') {
 					// pragma
@@ -133,6 +140,12 @@ class MustacheTemplate
 			}
 			if ($ci) {
 				$ris[0][] = $ci;
+				if (in_array($ci[0], array(static::RI_VAR, static::RI_RAWVAR, static::RI_SECTION, static::RI_INVSECTION), true)) {
+					if (!isset($this->vars[$ci[1]])) {
+						$this->vars[$ci[1]] = 0;
+					}
+					++$this->vars[$ci[1]];
+				}
 			}
 		} while ($e !== false);
 
