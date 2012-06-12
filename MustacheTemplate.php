@@ -48,7 +48,7 @@ class MustacheTemplate
 	 * @param string $string  The template content to load.
 	 * @return MustacheTemplate
 	 */
-	public static function fromString($string)
+	public static function fromTemplateString($string)
 	{
 		$obj = new static();
 		$obj->setTemplateContent($string);
@@ -64,7 +64,7 @@ class MustacheTemplate
 	 */
 	public static function fromTemplateFile($filename)
 	{
-		return static::fromString(file_get_contents($filename));
+		return static::fromTemplateString(file_get_contents($filename));
 	}
 
 	/**
