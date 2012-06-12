@@ -27,7 +27,7 @@ class MustacheTemplate
 		return $obj;
 	}
 
-	public static function fromFile($filename)
+	public static function fromTemplateFile($filename)
 	{
 		return static::fromString(file_get_contents($filename));
 	}
