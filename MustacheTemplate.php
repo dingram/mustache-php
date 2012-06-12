@@ -206,15 +206,11 @@ class MustacheTemplate
 			// iterate over the item, rendering each time
 			$output = '';
 			foreach ($section as $item) {
-				if (is_array($item)) {
-					$output .= $this->renderList($renderlist, $this->nestContext($item, $context), $opts);
-				} else {
-					$output .= $this->renderList($renderlist, $context, $opts);
-				}
+				$output .= $this->renderList($renderlist, $this->nestContext($item, $context), $opts);
 			}
 			return $output;
 		}
-		return $this->renderList($renderlist, $context, $opts);
+		return $this->renderList($renderlist, $this->nestContext($section, $context), $opts);
 	}
 
 	protected function renderPartial($partial, array &$context, array &$opts)
