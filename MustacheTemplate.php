@@ -5,6 +5,9 @@
  */
 class MustacheTemplate
 {
+	/** Minimum number of bytes of raw text before it's gzipped */
+	const COMPRESS_LIMIT = 1024;
+
 	/** Render opcode: uninterpreted text */
 	const RI_TEXT       = 1;
 	/** Render opcode: gzipped uninterpreted text */
@@ -141,10 +144,18 @@ class MustacheTemplate
 			if ($e === false) {
 				// no more opening tags; grab it all and we're done
 				$ci = array(static::RI_TEXT, substr($t, $s));
+				if (strlen($ci[1]) > static::COMPRESS_LIMIT) {
+					$ci[0] = static::RI_GZTEXT;
+					$ci[1] = gzcompress($ci[1], 9);
+				}
 			} else {
 				// grab the text up to the opening tag, if any
 				if ($e > $s) {
 					$ci = array(static::RI_TEXT, substr($t, $s, $e-$s));
+					if (strlen($ci[1]) > static::COMPRESS_LIMIT) {
+						$ci[0] = static::RI_GZTEXT;
+						$ci[1] = gzcompress($ci[1], 9);
+					}
 					$ris[0][] = $ci;
 				}
 
