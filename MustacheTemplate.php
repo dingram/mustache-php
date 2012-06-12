@@ -16,6 +16,10 @@ class MustacheTemplate
 	protected $partials = array();
 	protected $renderlist = array();
 
+	protected function __construct()
+	{
+	}
+
 	public static function fromString($string)
 	{
 		$obj = new static();
