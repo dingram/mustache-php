@@ -68,6 +68,42 @@ class MustacheTemplate
 	}
 
 	/**
+	 * Create a MustacheTemplate instance from a JSON-serialized compiled
+	 * template string.
+	 *
+	 * @param string $json  The JSON string to use to construct a template.
+	 * @return MustacheTemplate
+	 */
+	public static function fromJsonString($json)
+	{
+		$json = json_decode($json, true);
+		$obj = new static();
+		$obj->vars = $json['vars'];
+		$obj->partials = $json['partials'];
+		$obj->renderlist = $json['renderlist'];
+		$obj->template = '';
+		return $obj;
+	}
+
+	/**
+	 * Return the compiled template as a JSON string.
+	 *
+	 * NOTE: This method will cause the template to be compiled, if that hasn't
+	 * already happened.
+	 *
+	 * @return string
+	 */
+	public function toJsonString()
+	{
+		$this->compile();
+		return json_encode(array(
+			'vars' => $this->vars,
+			'partials' => $this->partials,
+			'renderlist' => $this->renderlist,
+		));
+	}
+
+	/**
 	 * Store the given template inside the object, and reset the renderlist.
 	 *
 	 * @param string $content  The template content.
