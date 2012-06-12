@@ -212,6 +212,19 @@ class MustacheTemplate
 					// comment, ignore
 					$ci = false;
 				}
+				if ($tag[0] === '=') {
+					// change delimiters
+					if (substr($tag, -1) !== '=') {
+						throw new LogicException('Malformed delimiter change section: must end with "="');
+					}
+					$tag = substr($tag, 1, -1);
+					$tag_parts = preg_split('/ +/', $tag);
+					if (count($tag_parts) != 2) {
+						throw new LogicException('Malformed delimiter change section: must be exactly two delimiters, with a space between');
+					}
+					list($otag, $ctag) = $tag_parts;
+					$ci = false;
+				}
 
 				$tag = trim($tag);
 				if ($ci === null) {

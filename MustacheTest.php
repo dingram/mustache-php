@@ -91,3 +91,9 @@ var_dump($tpl->render(array('person'=>array(
 	array('name' => 'Derek'),
 	array('name' => 'Edna'),
 ))));
+
+echo str_repeat('-', 78)."\n";
+
+$tpl = MustacheTemplate::fromString('{{!comment here}}* |{{default_tags}}| @{{=<% %>=}}@ {{/<% erb_tags %>/}} +<%={{ }}=%>+ @@{{default_tags_again}}@@');
+var_dump($tpl->__toString());
+var_dump($tpl->render(array()));
