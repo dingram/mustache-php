@@ -150,7 +150,7 @@ class MustacheTemplate
 			return $context['data'];
 		}
 		$curcontext =& $context;
-		while (!array_key_exists($var, $curcontext['data'])) {
+		while (!is_array($curcontext['data']) || !array_key_exists($var, $curcontext['data'])) {
 			if (!isset($curcontext['outer'])) {
 				// no outer context; variable is not defined
 				return null;
