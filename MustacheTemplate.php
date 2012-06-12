@@ -208,6 +208,10 @@ class MustacheTemplate
 					array_unshift($ris, array('_'=>$tag, '_opcode'=>static::RI_INVSECTION));
 					$ci = false;
 				}
+				if ($tag[0] === '!') {
+					// comment, ignore
+					$ci = false;
+				}
 
 				$tag = trim($tag);
 				if ($ci === null) {
