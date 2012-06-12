@@ -166,6 +166,9 @@ class MustacheTemplate
 	protected function lookupVar($var, array &$context, $encode = true)
 	{
 		if ($var === '.') {
+			if (is_array($context['data'])) {
+				return implode(',', $context['data']);
+			}
 			return $context['data'];
 		}
 		$curcontext =& $context;
