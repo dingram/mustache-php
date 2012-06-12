@@ -434,6 +434,12 @@ class MustacheTemplate
 					break;
 				case static::RI_PRAGMA:
 					// Execute a pragma instruction. For now, do nothing.
+					if ($ri[1] === 'UNESCAPED') {
+						$opts['encode_default'] = false;
+					}
+					if ($ri[1] === 'ESCAPED') {
+						$opts['encode_default'] = true;
+					}
 					break;
 				default:
 					break;
