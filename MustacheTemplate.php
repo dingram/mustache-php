@@ -174,7 +174,7 @@ class MustacheTemplate
 		return $v;
 	}
 
-	protected function renderSection($section, array &$render_instructions, array &$context, array &$opts)
+	protected function renderSection($section, array &$renderlist, array &$context, array &$opts)
 	{
 		if ($section === null || $section === array() || $section === false || $section === 0 || $section === '') {
 			// falsy values -> empty string
@@ -185,14 +185,14 @@ class MustacheTemplate
 			$output = '';
 			foreach ($section as $item) {
 				if (is_array($item)) {
-					$output .= $this->renderList($render_instructions, $this->nestContext($item, $context), $opts);
+					$output .= $this->renderList($renderlist, $this->nestContext($item, $context), $opts);
 				} else {
-					$output .= $this->renderList($render_instructions, $context, $opts);
+					$output .= $this->renderList($renderlist, $context, $opts);
 				}
 			}
 			return $output;
 		}
-		return $this->renderList($render_instructions, $context, $opts);
+		return $this->renderList($renderlist, $context, $opts);
 	}
 
 	protected function renderPartial($partial, array &$context, array &$opts)
