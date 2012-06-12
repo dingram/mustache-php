@@ -53,17 +53,22 @@ class MustacheTemplate
 		$otag = '{{';
 		$ctag = '}}';
 
-		$ris = array();
+		$ris = array(array('_' => null));
 		$t = $this->template;
 		$s = 0;
 		do {
 			// snaffle text up to next opening tag
 			$e = mb_strpos($t, $otag, $s);
 			if ($e === false) {
+				// no more opening tags; grab it all and we're done
 				$ci = array(static::RI_TEXT, substr($t, $s));
 			} else {
-				$ci = array(static::RI_TEXT, substr($t, $s, $e-$s));
-				$ris[] = $ci;
+				// grab the text up to the opening tag, if any
+				if ($e > $s) {
+					$ci = array(static::RI_TEXT, substr($t, $s, $e-$s));
+					$ris[0][] = $ci;
+				}
+
 				// gobble the opening delimiter
 				$s = $e + mb_strlen($otag);
 				// find the tag name
@@ -72,24 +77,71 @@ class MustacheTemplate
 				$tag_type = static::RI_VAR;
 				// gobble the closing delimiter
 				$s = $e + mb_strlen($ctag);
-				// if it's triple-brace, gobble an extra closing brace
+
+				$ci = null;
+
+				// determine tag type
 				if ($tag[0] === '{' && $t[$s] === '}') {
+					// unescaped variable
+					// if it's triple-brace, gobble an extra closing brace
 					++$s;
 					$tag = substr($tag, 1);
 					$tag_type = static::RI_RAWVAR;
 				}
 				if ($tag[0] === '&') {
+					// unescaped variable
 					$tag = substr($tag, 1);
 					$tag_type = static::RI_RAWVAR;
 				}
+				if ($tag[0] === '>') {
+					// partial
+					$tag = substr($tag, 1);
+					$tag_type = static::RI_PARTIAL;
+				}
+				if ($tag[0] === '%') {
+					// pragma
+					$tag = substr($tag, 1);
+					$tag_type = static::RI_PRAGMA;
+				}
+				if ($tag[0] === '/') {
+					// end section
+					$tag = substr($tag, 1);
+					if ($ris[0]['_'] !== $tag) {
+						throw new LogicException('Tried to use '.$otag.'/'.$tag.$ctag.' to close '.$ris[0]['_'].' section');
+					}
+					$ci = array($ris[0]['_opcode'], $tag, array_shift($ris));
+					unset($ci[2]['_']);
+					unset($ci[2]['_opcode']);
+				}
+				if ($tag[0] === '#') {
+					// start section
+					$tag = substr($tag, 1);
+					array_unshift($ris, array('_'=>$tag, '_opcode'=>static::RI_SECTION));
+					$ci = false;
+				}
+				if ($tag[0] === '^') {
+					// start inverted section
+					$tag = substr($tag, 1);
+					array_unshift($ris, array('_'=>$tag, '_opcode'=>static::RI_INVSECTION));
+					$ci = false;
+				}
+
 				$tag = trim($tag);
-				$ci = array($tag_type, $tag);
+				if ($ci === null) {
+					$ci = array($tag_type, $tag);
+				}
 			}
-			$ris[] = $ci;
+			if ($ci) {
+				$ris[0][] = $ci;
+			}
 		} while ($e !== false);
 
-		$this->renderlist = $ris;
-		return $ris;
+		if ($ris[0]['_'] !== null) {
+			throw new LogicException('Section '.$ris[0]['_'].' still open at end of template');
+		}
+		unset($ris[0]['_']);
+		$this->renderlist = $ris[0];
+		return $ris[0];
 	}
 
 	protected function lookupVar($var, array &$context, $encode = true)
