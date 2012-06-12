@@ -124,7 +124,7 @@ class MustacheTemplate
 
 	protected function renderSection($section, array &$render_instructions, array &$context, array &$opts)
 	{
-		if ($section === array() || $section === false || $section === 0 || $section === '') {
+		if ($section === null || $section === array() || $section === false || $section === 0 || $section === '') {
 			// falsy values -> empty string
 			return '';
 		}
@@ -140,6 +140,7 @@ class MustacheTemplate
 			}
 			return $output;
 		}
+		return $this->renderList($render_instructions, $context, $opts);
 	}
 
 	protected function renderPartial($partial, array &$context, array &$opts)
