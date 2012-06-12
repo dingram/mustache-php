@@ -32,6 +32,13 @@ class MustacheTemplate
 		return static::fromString(file_get_contents($filename));
 	}
 
+	protected function setTemplateContent($content)
+	{
+		$this->renderlist = array();
+		$this->template = $content;
+		return $this;
+	}
+
 	public function getVariables()
 	{
 		$this->compile();
@@ -42,11 +49,6 @@ class MustacheTemplate
 	{
 		$this->compile();
 		return array_keys($this->partials);
-	}
-
-	protected function setTemplateContent($content)
-	{
-		$this->template = $content;
 	}
 
 	protected function compile()
