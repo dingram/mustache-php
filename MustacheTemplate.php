@@ -11,6 +11,7 @@ class MustacheTemplate
 	const RI_PARTIAL    = 7;
 	const RI_PRAGMA     = 8;
 
+	protected $template = '';
 	protected $vars = array();
 	protected $partials = array();
 	protected $renderlist = array();
@@ -193,5 +194,10 @@ class MustacheTemplate
 			'encode_default' => true,
 		);
 		return $this->renderList($this->renderlist, $this->nestContext($data), $opts);
+	}
+
+	public function __toString()
+	{
+		return $this->template;
 	}
 }
