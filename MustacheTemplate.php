@@ -24,6 +24,8 @@ class MustacheTemplate
 	const RI_PARTIAL    = 7;
 	/** Render opcode: pragma */
 	const RI_PRAGMA     = 8;
+	/** Render opcode: capture */
+	const RI_CAPTURE    = 9;
 
 	/** @var string The original template */
 	protected $template = '';
@@ -291,6 +293,12 @@ class MustacheTemplate
 					// start inverted section
 					$tag = substr($tag, 1);
 					array_unshift($ris, array('_'=>$tag, '_opcode'=>static::RI_INVSECTION));
+					$ci = false;
+				}
+				if ($tag[0] === '$') {
+					// start capture section
+					$tag = substr($tag, 1);
+					array_unshift($ris, array('_'=>$tag, '_opcode'=>static::RI_CAPTURE));
 					$ci = false;
 				}
 				if ($tag[0] === '!') {
