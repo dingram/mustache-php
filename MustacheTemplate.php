@@ -201,10 +201,9 @@ class MustacheTemplate
 				$e = mb_strpos($t, $ctag, $s);
 				$tag = substr($t, $s, $e-$s);
 				$tag_type = static::RI_VAR;
-				// gobble the closing delimiter
-				$s = $e + mb_strlen($ctag);
 
 				$ci = null;
+				$params = null;
 
 				// determine tag type
 				if ($tag[0] === '{' && $t[$s] === '}') {
@@ -221,12 +220,51 @@ class MustacheTemplate
 				}
 				if ($tag[0] === '>') {
 					// partial
-					$tag = substr($tag, 1);
+					$tag = ltrim(substr($tag, 1));
 					$tag_type = static::RI_PARTIAL;
 					if (!isset($this->partials[$tag])) {
 						$this->partials[$tag] = 0;
 					}
 					++$this->partials[$tag];
+					$params = array();
+					$spacepos = mb_strpos($tag, ' ');
+					$equalpos = $spacepos === false ? false : mb_strpos($tag, '=', $spacepos);
+					if ($equalpos !== false) {
+						$partial_name = mb_substr($tag, 0, $spacepos);
+						// parse parameters
+						do {
+							$param_name = trim(mb_substr($tag, $spacepos, $equalpos-$spacepos));
+							if (!$param_name) break; // trailing whitespace inside tag
+							$spacepos = mb_strpos($tag, ' ', $equalpos);
+							$quotepos = mb_strpos($tag, '"', $equalpos);
+
+							if ($quotepos !== false && ($spacepos===false || $quotepos < $spacepos)) {
+								// parsing quoted value
+								$equote_start = $quotepos;
+								while (true) {
+									$endquotepos = mb_strpos($tag, '"', $equote_start+1);
+									if (true || mb_substr($tag, $endquotepos-1, 1) !== '\\') {
+										break;
+									}
+									$equote_start = $endquotepos + 1;
+								}
+								$spacepos = mb_strpos($tag, ' ', $endquotepos);
+								$param_value = mb_substr($tag, $quotepos+1, $endquotepos-$quotepos-1);
+							} else {
+								// parsing unquoted value
+								if ($spacepos !== false) {
+									$param_value = mb_substr($tag, $equalpos+1, $spacepos-$equalpos-1);
+								} else {
+									$param_value = mb_substr($tag, $equalpos+1);
+								}
+							}
+							$params[$param_name] = $param_value;
+
+							$equalpos = $spacepos === false ? false : strpos($tag, '=', $spacepos);
+						} while ($equalpos !== false);
+						// save just the partial name
+						$tag = $partial_name;
+					}
 				}
 				if ($tag[0] === '%') {
 					// pragma
@@ -276,6 +314,9 @@ class MustacheTemplate
 				$tag = trim($tag);
 				if ($ci === null) {
 					$ci = array($tag_type, $tag);
+					if ($params !== null) {
+						$ci[2] = $params;
+					}
 				}
 			}
 			if ($ci) {
@@ -287,6 +328,10 @@ class MustacheTemplate
 					++$this->vars[$ci[1]];
 				}
 			}
+
+			// gobble the closing delimiter (doing it here allows $s and $e to move
+			// based on the tag content, e.g. parsing parameters)
+			$s = $e + mb_strlen($ctag);
 		} while ($e !== false);
 
 		if ($ris[0]['_'] !== null) {
