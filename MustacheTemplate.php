@@ -147,6 +147,24 @@ class MustacheTemplate
 	}
 
 	/**
+	 * Return the list of rendering instructions for the template.
+	 *
+	 * NOTE: This method will cause the template to be compiled, if that hasn't
+	 * already happened.
+	 *
+	 * NOTE: This method returns a reference to the render list (which is a
+	 * potentially large array). With great power comes great responsibility.
+	 * Use it wisely.
+	 *
+	 * @return array
+	 */
+	public function &getRenderList()
+	{
+		$this->compile();
+		return $this->renderlist;
+	}
+
+	/**
 	 * Compile the template into an internal list of rendering instructions.
 	 * This method also populates the lists of partials and variables used
 	 * within the template.
@@ -348,184 +366,6 @@ class MustacheTemplate
 		unset($ris[0]['_']);
 		$this->renderlist = $ris[0];
 		return $ris[0];
-	}
-
-	/**
-	 * Return the value of a variable in the given context. If it does not
-	 * exist, recurse into any nested contexts. If it still cannot be found,
-	 * return null. The special variable name "." will return the entire
-	 * current context.
-	 *
-	 * The result of this function will be HTML-encoded by default; set
-	 * $encode to false to get the raw value.
-	 *
-	 * @param string  $var      The variable to be looked up
-	 * @param array  &$context  The context to search
-	 * @param bool    $encode   Whether to HTML-encode the result (default:
-	 *                          true)
-	 * @return mixed
-	 */
-	protected function lookupVar($var, array &$context, $encode = true)
-	{
-		if ($var === '.') {
-			if (is_array($context['data'])) {
-				return implode(',', $context['data']);
-			}
-			return $context['data'];
-		}
-		$curcontext =& $context;
-		// deal with dot notation
-		$var_parts = explode('.', $var);
-		while (!is_array($curcontext['data']) || !array_key_exists($var_parts[0], $curcontext['data'])) {
-			if (!isset($curcontext['outer'])) {
-				// no outer context; variable is not defined
-				return null;
-			} else {
-				$curcontext =& $curcontext['outer'];
-			}
-		}
-		// deal with any further dots
-		$value =& $curcontext['data'];
-		foreach ($var_parts as $var_part) {
-			if (!is_array($value) || !array_key_exists($var_part, $value)) {
-				// either we can't go any further, or the key wasn't found
-				// NOTE: do not recurse to outer context
-				return null;
-			}
-			$value =& $value[$var_part];
-		}
-		if ($encode) {
-			return htmlspecialchars(is_array($value) ? json_encode($value) : $value, ENT_QUOTES, 'UTF-8');
-		} else {
-			return $value;
-		}
-	}
-
-	/**
-	 * Internal helper function to create a nested context.
-	 *
-	 * @param mixed  $new_values   The data for the new context
-	 * @param mixed &$old_context  The old context
-	 * @return array
-	 */
-	protected function &nestContext($new_values, &$old_context = null)
-	{
-		$v = array(
-			'outer' => $old_context,
-			'data' => $new_values
-		);
-		return $v;
-	}
-
-	/**
-	 * Internal helper function to render a section.
-	 *
-	 * @TODO: doesn't handle lambda $section values
-	 *
-	 * @param mixed  $section     The value of the section variable
-	 * @param array &$renderlist  The rendering instructions for the section
-	 * @param array &$context     The current variable context (outside the
-	 *                            section)
-	 * @param array &$opts        The current set of options
-	 * @return string
-	 */
-	protected function renderSection($section, array &$renderlist, array &$context, array &$opts)
-	{
-		if ($section === null || $section === array() || $section === false || $section === 0 || $section === '') {
-			// falsy values -> empty string
-			return '';
-		}
-		if (is_array($section) || $section instanceof Traversable) {
-			// iterate over the item, rendering each time
-			$output = '';
-			foreach ($section as $item) {
-				$output .= $this->renderList($renderlist, $this->nestContext($item, $context), $opts);
-			}
-			return $output;
-		}
-		return $this->renderList($renderlist, $this->nestContext($section, $context), $opts);
-	}
-
-	/**
-	 * Internal helper function to render a partial.
-	 *
-	 * @TODO: not implemented
-	 *
-	 * @param mixed  $section  The partial name
-	 * @param array &$context  The current variable context (to be passed into
-	 *                         the partial)
-	 * @param array &$opts     The current set of options
-	 * @return string
-	 */
-	protected function renderPartial($partial, array &$context, array &$opts)
-	{
-		return "«partial {$partial}»";
-	}
-
-	/**
-	 * Internal helper function to render a string from a list of rendering
-	 * instructions.
-	 *
-	 */
-	protected function renderList(array &$render_instructions, array &$context, array &$opts)
-	{
-		$output = '';
-		foreach ($render_instructions as $ri) {
-			switch ($ri[0]) {
-				case static::RI_TEXT:
-					// simple text block; use it directly
-					$output .= $ri[1];
-					break;
-				case static::RI_GZTEXT:
-					// gzipped text block; ungzip and use it directly
-					$output .= gzuncompress($ri[1]);
-					break;
-				case static::RI_VAR:
-					// HTML-encoded variable replacement
-					$output .= $this->lookupVar($ri[1], $context, $opts['encode_default']);
-					break;
-				case static::RI_RAWVAR:
-					// raw (non-encoded) variable replacement
-					$output .= $this->lookupVar($ri[1], $context, !$opts['encode_default']);
-					break;
-				case static::RI_SECTION:
-					$output .= $this->renderSection($this->lookupVar($ri[1], $context, false), $ri[2], $context, $opts);
-					break;
-				case static::RI_INVSECTION:
-					$output .= $this->renderSection(!$this->lookupVar($ri[1], $context, false), $ri[2], $context, $opts);
-					break;
-				case static::RI_PARTIAL:
-					$output .= $this->renderPartial($ri[1], $context, $opts);
-					break;
-				case static::RI_PRAGMA:
-					// Execute a pragma instruction. For now, do nothing.
-					if ($ri[1] === 'UNESCAPED') {
-						$opts['encode_default'] = false;
-					}
-					if ($ri[1] === 'ESCAPED') {
-						$opts['encode_default'] = true;
-					}
-					break;
-				default:
-					break;
-			}
-		}
-		return $output;
-	}
-
-	/**
-	 * Render the template with the given data.
-	 *
-	 * @param array $data  The data to use when rendering the template.
-	 * @return string
-	 */
-	public function render(array $data)
-	{
-		$this->compile();
-		$opts = array(
-			'encode_default' => true,
-		);
-		return $this->renderList($this->renderlist, $this->nestContext($data), $opts);
 	}
 
 	/**
