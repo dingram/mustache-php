@@ -321,7 +321,9 @@ class MustacheTemplate
 			return $context['data'];
 		}
 		$curcontext =& $context;
-		while (!is_array($curcontext['data']) || !array_key_exists($var, $curcontext['data'])) {
+		// deal with dot notation
+		$var_parts = explode('.', $var);
+		while (!is_array($curcontext['data']) || !array_key_exists($var_parts[0], $curcontext['data'])) {
 			if (!isset($curcontext['outer'])) {
 				// no outer context; variable is not defined
 				return null;
@@ -329,10 +331,20 @@ class MustacheTemplate
 				$curcontext =& $curcontext['outer'];
 			}
 		}
+		// deal with any further dots
+		$value =& $curcontext['data'];
+		foreach ($var_parts as $var_part) {
+			if (!is_array($value) || !array_key_exists($var_part, $value)) {
+				// either we can't go any further, or the key wasn't found
+				// NOTE: do not recurse to outer context
+				return null;
+			}
+			$value =& $value[$var_part];
+		}
 		if ($encode) {
-			return htmlspecialchars($curcontext['data'][$var], ENT_QUOTES, 'UTF-8');
+			return htmlspecialchars(is_array($value) ? json_encode($value) : $value, ENT_QUOTES, 'UTF-8');
 		} else {
-			return $curcontext['data'][$var];
+			return $value;
 		}
 	}
 
