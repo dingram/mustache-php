@@ -56,7 +56,7 @@ must not contain the end-of-tag delimiter.
 ## Capturing sections
 
 Taking an idea from Kohana, it is possible to update the data model in the
-current scope. A section that starts with `$` will capture its content and
+current scope. A section that starts with `$` will render its content and
 store it under the tag name in the current scope, overwriting any existing
 value. The entire section renders to an empty string.
 
