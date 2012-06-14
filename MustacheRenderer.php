@@ -231,12 +231,12 @@ class MustacheRenderer
 	 *
 	 * @TODO: not implemented
 	 *
-	 * @param mixed  $partial  The partial name
-	 * @param array &$params   Additional variable context (to be passed into
-	 *                         the partial, layered above the current context)
-	 * @param array &$context  The current variable context (to be passed into
-	 *                         the partial)
-	 * @param array &$opts     The current set of options
+	 * @param string  $partial  The partial name
+	 * @param array  &$params   Additional variable context (to be passed into
+	 *                          the partial, layered above the current context)
+	 * @param array  &$context  The current variable context (to be passed into
+	 *                          the partial)
+	 * @param array  &$opts     The current set of options
 	 * @return string
 	 */
 	protected function renderPartial($partial, array &$params, array &$context, array &$opts)
