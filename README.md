@@ -14,6 +14,10 @@ There are a few other features that might be useful:
  - Dot notation to access sub-values, e.g. `{{foo.bar}}` instead of `{{#foo}}{{bar}}{{/foo}}`
  - Capturing sections (described below)
 
+There is one notable missing feature:
+
+ - Sections do not currently support lambda values; they are treated as truthy single values.
+
 ## Quickstart
 
     $data = array('test' => 'test of the Mustache templating system in PHP');
