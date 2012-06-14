@@ -137,7 +137,7 @@ class MustacheRenderer
 	 */
 	protected function renderGzText($text)
 	{
-		return gzuncompress($text);
+		return $this->renderText(gzuncompress($text));
 	}
 
 	/**
