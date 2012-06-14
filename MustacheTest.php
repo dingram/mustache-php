@@ -132,3 +132,11 @@ $rdr = MustacheRenderer::create($tpl);
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
 var_dump($rdr->render(array('a' => array(array('b'=>array('c'=>'C'))), 'c'=>'SEE', 'd'=>'DEE')));
+
+echo str_repeat('-', 78)."\n";
+
+$tpl = MustacheTemplate::fromTemplateString('Test {{>test arg1=foo bar=baz}} partially {{> partial foo="bar bar" baz="quux"}} {{>another partial=arg }}');
+$rdr = MustacheRenderer::create($tpl);
+
+var_dump($tpl->__toString());
+var_dump($rdr->render(array()));
