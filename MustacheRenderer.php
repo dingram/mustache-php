@@ -227,6 +227,32 @@ class MustacheRenderer
 	}
 
 	/**
+	 * Fetch the template content for a given partial name.
+	 *
+	 * @param string  The partial name
+	 * @return string
+	 */
+	protected function fetchPartialContent($partial)
+	{
+		return "«partial {$partial}»";
+	}
+
+	/**
+	 * Fetch the renderlist for a given partial name.
+	 *
+	 * This gives us the opportunity to make use of a compiled template cache.
+	 *
+	 * @param string  The partial name
+	 * @return array
+	 */
+	protected function &fetchPartialRenderList($partial)
+	{
+		return MustacheTemplate::fromTemplateString(
+			$this->fetchPartialContent($partial)
+		)->getRenderList();
+	}
+
+	/**
 	 * Internal helper function to render a partial.
 	 *
 	 * @TODO: not implemented
@@ -241,11 +267,9 @@ class MustacheRenderer
 	 */
 	protected function renderPartial($partial, array &$params, array &$context, array &$opts)
 	{
-		if ($params) {
-			return "«partial {$partial} ".json_encode($params)."»";
-		} else {
-			return "«partial {$partial}»";
-		}
+		$newcontext = $params;
+		$renderlist =& $this->fetchPartialRenderList($partial);
+		return $this->renderList($renderlist, $this->nestContext($newcontext, $context), $opts);
 	}
 
 	/**
