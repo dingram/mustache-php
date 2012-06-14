@@ -3,8 +3,16 @@
 require 'MustacheTemplate.php';
 require 'MustacheRenderer.php';
 
+class TestMustacheRenderer extends MustacheRenderer
+{
+	protected function fetchPartialContent($partial)
+	{
+		return "«partial {$partial}»";
+	}
+}
+
 $tpl = MustacheTemplate::fromTemplateString('This is a {{test}}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -14,7 +22,7 @@ var_dump($rdr->render(array('test'=>'test with <b>html</b>')));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('This is a {{{test}}}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -24,7 +32,7 @@ var_dump($rdr->render(array('test'=>'test with <b>html</b>')));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('This is a {{& test}}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -34,7 +42,7 @@ var_dump($rdr->render(array('test'=>'test with <b>html</b>')));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('{{test}}This is a {{test}}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -43,7 +51,7 @@ var_dump($rdr->render(array('test'=>'test')));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('{{test}}This is a {{&test}}{{test}}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array('test'=>'test')));
@@ -51,7 +59,7 @@ var_dump($rdr->render(array('test'=>'test')));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('{{test}}{{foo}}This is a {{&foo}}{{&test}}{{test}}{{{foo}}}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array('test'=>'test')));
@@ -59,7 +67,7 @@ var_dump($rdr->render(array('test'=>'test')));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('Test {{>test}} partially {{> partial}}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array('test'=>'test')));
@@ -67,7 +75,7 @@ var_dump($rdr->render(array('test'=>'test')));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('Test {{#test}}non-{{.}}-empty{{/test}}{{^test}}empty{{/test}}.');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -76,7 +84,7 @@ var_dump($rdr->render(array('test'=>'test')));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('Test{{#foo}} foo{{#bar}} bar {{/bar}}foo{{/foo}}.{{#bar}} Outer bar{{/bar}}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -88,7 +96,7 @@ var_dump($rdr->render(array('foo'=>array('bar'=>true))));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('start:{{#person}} [ name: {{name}} ]{{/person}}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -106,7 +114,7 @@ var_dump($rdr->render(array('person'=>array(
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('{{!comment here}}* |{{default_tags}}| @{{=<% %>=}}@ {{/<% erb_tags %>/}} +<%={{ }}=%>+ @@{{default_tags_again}}@@');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -114,7 +122,7 @@ var_dump($rdr->render(array()));
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('do {{re}} {{mi.fa}} sol {{la.ti.do}}!');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -127,7 +135,7 @@ var_dump($rdr->render(array('re' => 'RAY', 'mi'=>array('fa'=>'ME FAR'), 'la'=>ar
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('sec: {{#a}}[{{b}}] ({{b.c}}) {{d}}{{/a}} {{c}}!');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));
@@ -136,7 +144,7 @@ var_dump($rdr->render(array('a' => array(array('b'=>array('c'=>'C'))), 'c'=>'SEE
 echo str_repeat('-', 78)."\n";
 
 $tpl = MustacheTemplate::fromTemplateString('Test {{>test arg1=foo bar=baz}} partially {{> partial foo="bar bar" baz="quux"}} {{>another partial=arg }}');
-$rdr = MustacheRenderer::create($tpl);
+$rdr = TestMustacheRenderer::create($tpl);
 
 var_dump($tpl->__toString());
 var_dump($rdr->render(array()));

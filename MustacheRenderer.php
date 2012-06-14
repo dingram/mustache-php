@@ -234,7 +234,7 @@ class MustacheRenderer
 	 */
 	protected function fetchPartialContent($partial)
 	{
-		return "«partial {$partial}»";
+		throw new RuntimeException('Not implemented. Create a subclass and override fetchPartialContent() and/or fetchPartialRenderList() if you wish to use partials.');
 	}
 
 	/**
@@ -254,8 +254,6 @@ class MustacheRenderer
 
 	/**
 	 * Internal helper function to render a partial.
-	 *
-	 * @TODO: not implemented
 	 *
 	 * @param string  $partial  The partial name
 	 * @param array  &$params   Additional variable context (to be passed into

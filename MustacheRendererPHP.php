@@ -178,25 +178,14 @@ class MustacheRendererPHP extends MustacheRenderer
 	}
 
 	/**
-	 * Internal helper function to render a partial.
+	 * Fetch the template content for a given partial name.
 	 *
-	 * @TODO: not implemented
-	 *
-	 * @param mixed  $partial  The partial name
-	 * @param array &$params   Additional variable context (to be passed into
-	 *                         the partial, layered above the current context)
-	 * @param array &$context  The current variable context (to be passed into
-	 *                         the partial)
-	 * @param array &$opts     The current set of options
+	 * @param string  The partial name
 	 * @return string
 	 */
-	protected function renderPartial($partial, array &$params, array &$context, array &$opts)
+	protected function fetchPartialContent($partial)
 	{
-		if ($params) {
-			return "«partial {$partial} ".json_encode($params)."»";
-		} else {
-			return "«partial {$partial}»";
-		}
+		return "«partial {$partial}»";
 	}
 
 }
