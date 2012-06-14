@@ -204,6 +204,9 @@ class MustacheTemplate
 					$ci[0] = static::RI_GZTEXT;
 					$ci[1] = gzcompress($ci[1], 9);
 				}
+				if ($ci[1] === '' || $ci[1] === false) {
+					$ci = false;
+				}
 			} else {
 				// grab the text up to the opening tag, if any
 				if ($e > $s) {
@@ -212,7 +215,9 @@ class MustacheTemplate
 						$ci[0] = static::RI_GZTEXT;
 						$ci[1] = gzcompress($ci[1], 9);
 					}
-					$ris[0][] = $ci;
+					if ($ci[1] !== '' && $ci[1] !== false) {
+						$ris[0][] = $ci;
+					}
 				}
 
 				// gobble the opening delimiter
