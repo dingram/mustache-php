@@ -1,7 +1,7 @@
 <?php
 
-require '../MustacheTemplate.php';
-require '../MustacheRenderer.php';
+require '../src/Template.php';
+require '../src/Renderer.php';
 
 class TestMustacheRenderer extends \Mustache\Renderer
 {

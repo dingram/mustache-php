@@ -1,7 +1,7 @@
 <?php
 namespace Mustache;
 
-require_once 'MustacheRenderer.php';
+require_once 'Renderer.php';
 
 /**
  * This class is responsible for rendering a compiled Mustache-format

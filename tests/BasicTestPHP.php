@@ -1,7 +1,7 @@
 <?php
 
-require '../MustacheTemplate.php';
-require '../MustacheRendererPHP.php';
+require '../src/Template.php';
+require '../src/RendererPHP.php';
 
 $tpl = \Mustache\Template::fromTemplateString('This is a {{test}}');
 $rdr = \Mustache\RendererPHP::create($tpl);
