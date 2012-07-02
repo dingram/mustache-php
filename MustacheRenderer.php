@@ -1,17 +1,18 @@
 <?php
+namespace Mustache;
 
 /**
  * This class is responsible for rendering a compiled Mustache-format
  * template to a string.
  */
-class MustacheRenderer
+class Renderer
 {
 	/**
 	 * Create a renderer for the given template.
 	 *
-	 * @param MustacheTemplate $template  The template to be rendered.
+	 * @param \Mustache\Template $template  The template to be rendered.
 	 */
-	public function __construct(MustacheTemplate $template)
+	public function __construct(Template $template)
 	{
 		$this->template = $template;
 	}
@@ -19,10 +20,10 @@ class MustacheRenderer
 	/**
 	 * Create a renderer for the given template.
 	 *
-	 * @param MustacheTemplate $template  The template to be rendered.
-	 * @return MustacheTemplate
+	 * @param \Mustache\Template $template  The template to be rendered.
+	 * @return \Mustache\Template
 	 */
-	public static function create(MustacheTemplate $template)
+	public static function create(Template $template)
 	{
 		return new static($template);
 	}
@@ -247,7 +248,7 @@ class MustacheRenderer
 	 */
 	protected function &fetchPartialRenderList($partial)
 	{
-		return MustacheTemplate::fromTemplateString(
+		return Template::fromTemplateString(
 			$this->fetchPartialContent($partial)
 		)->getRenderList();
 	}
@@ -280,35 +281,35 @@ class MustacheRenderer
 		$output = '';
 		foreach ($render_instructions as $ri) {
 			switch ($ri[0]) {
-				case MustacheTemplate::RI_TEXT:
+				case Template::RI_TEXT:
 					// simple text block; use it directly
 					$output .= $this->renderText($ri[1]);
 					break;
-				case MustacheTemplate::RI_GZTEXT:
+				case Template::RI_GZTEXT:
 					// gzipped text block; ungzip and use it directly
 					$output .= $this->renderGzText($ri[1]);
 					break;
-				case MustacheTemplate::RI_VAR:
+				case Template::RI_VAR:
 					// HTML-encoded variable replacement
 					$output .= $this->renderVar($ri[1], $context, $opts['encode_default']);
 					break;
-				case MustacheTemplate::RI_RAWVAR:
+				case Template::RI_RAWVAR:
 					// raw (non-encoded) variable replacement
 					$output .= $this->renderVar($ri[1], $context, !$opts['encode_default']);
 					break;
-				case MustacheTemplate::RI_SECTION:
+				case Template::RI_SECTION:
 					$output .= $this->renderSection($ri[1], $ri[2], $context, $opts, true);
 					break;
-				case MustacheTemplate::RI_INVSECTION:
+				case Template::RI_INVSECTION:
 					$output .= $this->renderSection($ri[1], $ri[2], $context, $opts, false);
 					break;
-				case MustacheTemplate::RI_CAPTURE:
+				case Template::RI_CAPTURE:
 					$output .= $this->renderCapture($ri[1], $ri[2], $context, $opts);
 					break;
-				case MustacheTemplate::RI_PARTIAL:
+				case Template::RI_PARTIAL:
 					$output .= $this->renderPartial($ri[1], $ri[2], $context, $opts);
 					break;
-				case MustacheTemplate::RI_PRAGMA:
+				case Template::RI_PRAGMA:
 					// Execute a pragma instruction. For now, do nothing.
 					if ($ri[1] === 'UNESCAPED') {
 						$opts['encode_default'] = false;

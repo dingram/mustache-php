@@ -21,8 +21,8 @@ There is one notable missing feature:
 ## Quickstart
 
     $data = array('test' => 'test of the Mustache templating system in PHP');
-    $tpl = MustacheRenderer::create(
-      MustacheTemplate::fromTemplateString('This is a {{test}}')
+    $tpl = \Mustache\Renderer::create(
+      \Mustache\Template::fromTemplateString('This is a {{test}}')
     );
     $tpl->render($data);
 

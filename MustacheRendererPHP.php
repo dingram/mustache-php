@@ -1,11 +1,13 @@
 <?php
+namespace Mustache;
+
 require_once 'MustacheRenderer.php';
 
 /**
  * This class is responsible for rendering a compiled Mustache-format
  * template to a PHP script. It ignores any data passed to it.
  */
-class MustacheRendererPHP extends MustacheRenderer
+class RendererPHP extends Renderer
 {
 	protected $in_php = false;
 	protected $var_uniq = '';
@@ -14,9 +16,9 @@ class MustacheRendererPHP extends MustacheRenderer
 	/**
 	 * Create a renderer for the given template.
 	 *
-	 * @param MustacheTemplate $template  The template to be rendered.
+	 * @param \Mustache\Template $template  The template to be rendered.
 	 */
-	public function __construct(MustacheTemplate $template, $in_php = false)
+	public function __construct(Template $template, $in_php = false)
 	{
 		parent::__construct($template);
 		$this->in_php = $in_php;
@@ -25,10 +27,10 @@ class MustacheRendererPHP extends MustacheRenderer
 	/**
 	 * Create a renderer for the given template.
 	 *
-	 * @param MustacheTemplate $template  The template to be rendered.
-	 * @return MustacheTemplate
+	 * @param \Mustache\Template $template  The template to be rendered.
+	 * @return \Mustache\Template
 	 */
-	public static function create(MustacheTemplate $template, $in_php = false)
+	public static function create(Template $template, $in_php = false)
 	{
 		return new static($template, $in_php);
 	}

@@ -1,9 +1,10 @@
 <?php
+namespace Mustache;
 
 /**
  * This class represents a Mustache-format template.
  */
-class MustacheTemplate
+class Template
 {
 	/** Minimum number of bytes of raw text before it's gzipped */
 	const COMPRESS_LIMIT = 1024;
@@ -45,10 +46,10 @@ class MustacheTemplate
 	}
 
 	/**
-	 * Create a MustacheTemplate instance from a template given as a string.
+	 * Create a \Mustache\Template instance from a template given as a string.
 	 *
 	 * @param string $string  The template content to load.
-	 * @return MustacheTemplate
+	 * @return \Mustache\Template
 	 */
 	public static function fromTemplateString($string)
 	{
@@ -58,11 +59,11 @@ class MustacheTemplate
 	}
 
 	/**
-	 * Create a MustacheTemplate instance from a template stored in a file.
+	 * Create a \Mustache\Template instance from a template stored in a file.
 	 *
 	 * @param string $filename  The path to the file that contains the template
 	 *                          to load.
-	 * @return MustacheTemplate
+	 * @return \Mustache\Template
 	 */
 	public static function fromTemplateFile($filename)
 	{
@@ -70,11 +71,11 @@ class MustacheTemplate
 	}
 
 	/**
-	 * Create a MustacheTemplate instance from a JSON-serialized compiled
+	 * Create a \Mustache\Template instance from a JSON-serialized compiled
 	 * template string.
 	 *
 	 * @param string $json  The JSON string to use to construct a template.
-	 * @return MustacheTemplate
+	 * @return \Mustache\Template
 	 */
 	public static function fromJsonString($json)
 	{
@@ -109,7 +110,7 @@ class MustacheTemplate
 	 * Store the given template inside the object, and reset the renderlist.
 	 *
 	 * @param string $content  The template content.
-	 * @return MustacheTemplate
+	 * @return \Mustache\Template
 	 */
 	protected function setTemplateContent($content)
 	{

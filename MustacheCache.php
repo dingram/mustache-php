@@ -1,6 +1,7 @@
 <?php
+namespace Mustache;
 
-abstract class MustacheCache
+abstract class Cache
 {
 	protected $fallback = null;
 
@@ -18,7 +19,7 @@ abstract class MustacheCache
 		if (is_callable($f)) {
 			return $f($key);
 		}
-		if ($f instanceof MustacheCache) {
+		if ($f instanceof Cache) {
 			return $f->get($key);
 		}
 		return null;
@@ -27,7 +28,7 @@ abstract class MustacheCache
 	protected function fallbackPut($key, $data, $lifetime = null, $flags = null)
 	{
 		$f = $this->getFallback();
-		if ($f instanceof MustacheCache) {
+		if ($f instanceof Cache) {
 			return $f->put($key, $data, $lifetime, $flags);
 		}
 		return false;
@@ -36,7 +37,7 @@ abstract class MustacheCache
 	protected function fallbackPurge($key)
 	{
 		$f = $this->getFallback();
-		if ($f instanceof MustacheCache) {
+		if ($f instanceof Cache) {
 			return $f->purge($key);
 		}
 		return false;
@@ -49,8 +50,8 @@ abstract class MustacheCache
 
 	public function setFallback($fallback)
 	{
-		if (!is_null($fallback) && !is_callable($fallback) && !$fallback instanceof MustacheCache) {
-			throw new InvalidArgumentException('Fallback must either be null, callable, or a subclass of MustacheCache');
+		if (!is_null($fallback) && !is_callable($fallback) && !$fallback instanceof Cache) {
+			throw new InvalidArgumentException('Fallback must either be null, callable, or a subclass of \\Mustache\\Cache');
 		}
 		$this->fallback = $fallback;
 		return $this;
@@ -58,10 +59,10 @@ abstract class MustacheCache
 
 	public function setUltimateFallback($fallback)
 	{
-		if (!is_null($fallback) && !is_callable($fallback) && !$fallback instanceof MustacheCache) {
-			throw new InvalidArgumentException('Fallback must either be null, callable, or a subclass of MustacheCache');
+		if (!is_null($fallback) && !is_callable($fallback) && !$fallback instanceof Cache) {
+			throw new InvalidArgumentException('Fallback must either be null, callable, or a subclass of \\Mustache\\Cache');
 		}
-		if ($this->fallback instanceof MustacheCache) {
+		if ($this->fallback instanceof Cache) {
 			$this->fallback->setUltimateFallback($fallback);
 		} else {
 			$this->fallback = $fallback;
