@@ -71,31 +71,37 @@ class DataTester
 		if (!is_array($testdata)) {
 			return $testdata;
 		}
-		try {
-			$tpl = \Mustache\Template::fromTemplateString($testdata['tpl']);
-			$rdr = TestMustacheRenderer::create($tpl);
-			$result = $rdr->render($testdata['data']);
-			if (!isset($testdata['err']) && $result === $testdata['out']) {
-				$this->pass();
-				return true;
-			} else {
-				if (isset($testdata['err'])) {
-					$this->fail($test_id, '<error>', $result);
+		if (is_array($testdata['tpl'])) {
+			$tpls = $testdata['tpl'];
+		} else {
+			$tpls = array($testdata['tpl']);
+		}
+		foreach ($tpls as $template_string) {
+			try {
+				$tpl = \Mustache\Template::fromTemplateString($template_string);
+				$rdr = TestMustacheRenderer::create($tpl);
+				$result = $rdr->render($testdata['data']);
+				if (!isset($testdata['err']) && $result === $testdata['out']) {
+					$this->pass();
 				} else {
-					$this->fail($test_id, $testdata['out'], $result);
+					if (isset($testdata['err'])) {
+						$this->fail($test_id, '<error>', $result);
+					} else {
+						$this->fail($test_id, $testdata['out'], $result);
+					}
+					return false;
 				}
-				return false;
-			}
-		} catch (\Exception $e) {
-			if (!isset($testdata['err'])) {
-				$this->fail($test_id, $testdata['out'], '<'.get_class($e).': '.$e->getMessage().'>');
-				return false;
-			} else {
-				// TODO: check exception class/message
-				$this->pass();
-				return true;
+			} catch (\Exception $e) {
+				if (!isset($testdata['err'])) {
+					$this->fail($test_id, $testdata['out'], '<'.get_class($e).': '.$e->getMessage().'>');
+					return false;
+				} else {
+					// TODO: check exception class/message
+					$this->pass();
+				}
 			}
 		}
+		return true;
 	}
 
 	protected function runTests()
