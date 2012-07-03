@@ -296,6 +296,7 @@ class Template
 					// pragma
 					$tag = substr($tag, 1);
 					$tag_type = static::RI_PRAGMA;
+					$params = array();
 				}
 				if ($tag[0] === '/') {
 					// end section
