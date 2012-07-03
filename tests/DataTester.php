@@ -18,7 +18,6 @@ class TestMustacheRenderer extends \Mustache\Renderer
 class DataTester
 {
 	protected $test_id;
-	protected $data_id;
 	protected $tests = 0;
 	protected $passed = 0;
 	protected $failed = 0;
@@ -28,10 +27,9 @@ class DataTester
 	const NO_TEST = 'no_test';
 	const NO_DATA = 'no_data';
 
-	public function __construct($test_id = null, $data_id = null, $show_failures = false)
+	public function __construct($test_id = null, $show_failures = false)
 	{
 		$this->test_id = $test_id;
-		$this->data_id = $data_id;
 		$this->show_failures = $show_failures;
 	}
 
@@ -42,79 +40,55 @@ class DataTester
 		echo ".";
 	}
 
-	protected function fail($test_id, $data_id, $expected, $actual)
+	protected function fail($test_id, $expected, $actual)
 	{
 		++$this->tests;
 		++$this->failed;
 		$this->failures[] = array(
 			'test_id' => $test_id,
-			'data_id' => $data_id,
 			'expected' => $expected,
 			'actual' => $actual,
 		);
 		echo "F";
 	}
 
-	protected function getData($test_id, $data_id)
+	protected function getData($test_id)
 	{
-		$test_path = __DIR__.'/data/test-%04d.tpl';
-		$data_path = __DIR__.'/data/test-%04d-%03d.%s';
-
-		$tpl_path  = sprintf($test_path, $test_id);
-		$json_path = sprintf($data_path, $test_id, $data_id, 'json');
-		$out_path  = sprintf($data_path, $test_id, $data_id, 'out');
-		$err_path  = sprintf($data_path, $test_id, $data_id, 'err');
-
-		if (!file_exists($tpl_path)) {
+		$test_path = sprintf(__DIR__.'/data/test-%04d.json', $test_id);
+		if (!file_exists($test_path)) {
 			return static::NO_TEST;
 		}
-		if (!file_exists($json_path)) {
-			return static::NO_DATA;
-		}
-		$out_exists = file_exists($out_path);
-		$err_exists = file_exists($err_path);
-		if (!$out_exists && !$err_exists) {
-			return static::NO_DATA;
-		}
-		$ret = array();
-		$ret['tpl'] = file_get_contents($tpl_path);
-		$ret['json'] = json_decode(file_get_contents($json_path), true);
-		if (!is_array($ret['json'])) {
-			return static::NO_DATA;
-		}
-		if ($out_exists) {
-			$ret['out'] = file_get_contents($out_path);
-		}
-		if ($err_exists) {
-			$ret['err'] = file_get_contents($err_path);
+		$ret = json_decode(file_get_contents($test_path), true);
+		if (!is_array($ret)) {
+			return static::NO_TEST;
 		}
 		return $ret;
 	}
 
-	protected function runTestData($test_id, $data_id)
+	protected function runTest($test_id)
 	{
-		$testdata = $this->getData($test_id, $data_id);
+		$testdata = $this->getData($test_id);
 		if (!is_array($testdata)) {
 			return $testdata;
 		}
 		try {
 			$tpl = \Mustache\Template::fromTemplateString($testdata['tpl']);
 			$rdr = TestMustacheRenderer::create($tpl);
-			$result = $rdr->render($testdata['json']);
+			$result = $rdr->render($testdata['data']);
 			if (!isset($testdata['err']) && $result === $testdata['out']) {
 				$this->pass();
 				return true;
 			} else {
 				if (isset($testdata['err'])) {
-					$this->fail($test_id, $data_id, '<error>', $result);
+					$this->fail($test_id, '<error>', $result);
 				} else {
-					$this->fail($test_id, $data_id, $testdata['out'], $result);
+					$this->fail($test_id, $testdata['out'], $result);
 				}
 				return false;
 			}
 		} catch (\Exception $e) {
 			if (!isset($testdata['err'])) {
-				$this->fail($test_id, $data_id, $testdata['out'], '<'.get_class($e).': '.$e->getMessage().'>');
+				$this->fail($test_id, $testdata['out'], '<'.get_class($e).': '.$e->getMessage().'>');
 				return false;
 			} else {
 				// TODO: check exception class/message
@@ -124,28 +98,17 @@ class DataTester
 		}
 	}
 
-	protected function runTest($test_id)
-	{
-		$result = static::NO_TEST;
-		$data_id = 1;
-		do {
-			$result = $this->runTestData($test_id, $data_id);
-			if (($this->tests % 40) == 0) {
-				echo "\n";
-			} elseif (($this->tests % 10) == 0) {
-				echo " ";
-			}
-			++$data_id;
-		} while (is_bool($result));
-		return $result;
-	}
-
 	protected function runTests()
 	{
 		$test_id = 1;
 		do {
 			$result = $this->runTest($test_id);
 			++$test_id;
+			if (($this->tests % 40) == 0) {
+				echo "\n";
+			} elseif (($this->tests % 10) == 0) {
+				echo " ";
+			}
 		} while ($result !== static::NO_TEST);
 	}
 
@@ -155,12 +118,10 @@ class DataTester
 		$this->passed = 0;
 		$this->failed = 0;
 
-		if (is_null($this->test_id)) {
-			$this->runTests();
-		} elseif (is_null($this->data_id)) {
+		if (!is_null($this->test_id)) {
 			$this->runTest($this->test_id);
 		} else {
-			$this->runTestData($this->test_id, $this->data_id);
+			$this->runTests();
 		}
 
 		echo "\n\n";
@@ -172,7 +133,7 @@ class DataTester
 			print "\n";
 			foreach ($this->failures as $failure) {
 				print str_repeat('-', 72) . "\n";
-				printf("Test %04d failed with data set %03d\n", $failure['test_id'], $failure['data_id']);
+				printf("Test %04d failed\n", $failure['test_id']);
 				print "Expected:\n{$failure['expected']}\n";
 				print "Actual:\n{$failure['actual']}\n";
 			}
@@ -181,5 +142,5 @@ class DataTester
 
 }
 
-$t = new DataTester(null, null, count($argv) > 1);
+$t = new DataTester(null, count($argv) > 1);
 $t->run();
