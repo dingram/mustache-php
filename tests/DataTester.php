@@ -23,14 +23,16 @@ class DataTester
 	protected $passed = 0;
 	protected $failed = 0;
 	protected $failures = array();
+	protected $show_failures = false;
 
 	const NO_TEST = 'no_test';
 	const NO_DATA = 'no_data';
 
-	public function __construct($test_id = null, $data_id = null)
+	public function __construct($test_id = null, $data_id = null, $show_failures = false)
 	{
 		$this->test_id = $test_id;
 		$this->data_id = $data_id;
+		$this->show_failures = $show_failures;
 	}
 
 	protected function pass()
@@ -165,9 +167,19 @@ class DataTester
 		printf("%4d tests run:\n", $this->tests);
 		printf("  %4d passed\n", $this->passed);
 		printf("  %4d failed\n", $this->failed);
+
+		if ($this->failures && $this->show_failures) {
+			print "\n";
+			foreach ($this->failures as $failure) {
+				print str_repeat('-', 72) . "\n";
+				printf("Test %04d failed with data set %03d\n", $failure['test_id'], $failure['data_id']);
+				print "Expected:\n{$failure['expected']}\n";
+				print "Actual:\n{$failure['actual']}\n";
+			}
+		}
 	}
 
 }
 
-$t = new DataTester();
+$t = new DataTester(null, null, count($argv) > 1);
 $t->run();
