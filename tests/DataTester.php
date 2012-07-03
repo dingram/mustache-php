@@ -1,9 +1,9 @@
 #!/usr/bin/env php
 <?php
 
-require '../src/Template.php';
-require '../src/Renderer.php';
-require '../src/RendererPHP.php';
+require(dirname(__DIR__).'/src/Template.php');
+require(dirname(__DIR__).'/src/Renderer.php');
+require(dirname(__DIR__).'/src/RendererPHP.php');
 
 
 class TestMustacheRenderer extends \Mustache\Renderer
