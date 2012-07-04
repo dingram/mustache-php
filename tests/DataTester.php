@@ -23,6 +23,7 @@ class DataTester
 	protected $failed = 0;
 	protected $failures = array();
 	protected $show_failures = false;
+	protected $colour = true;
 
 	const NO_TEST = 'no_test';
 	const NO_DATA = 'no_data';
@@ -33,11 +34,42 @@ class DataTester
 		$this->show_failures = $show_failures;
 	}
 
+	protected function colour()
+	{
+		if (!$this->colour) return '';
+
+		$ret = '';
+		foreach (func_get_args() as $c) {
+			switch ($c) {
+				case 'bold':       $ret .= "\033[1m";  break;
+				case 'red':        $ret .= "\033[31m"; break;
+				case 'green':      $ret .= "\033[32m"; break;
+				case 'yellow':     $ret .= "\033[33m"; break;
+				case 'blue':       $ret .= "\033[34m"; break;
+				case 'magenta':    $ret .= "\033[35m"; break;
+				case 'cyan':       $ret .= "\033[36m"; break;
+				case 'white':      $ret .= "\033[37m"; break;
+				case 'red-bg':     $ret .= "\033[41m"; break;
+				case 'green-bg':   $ret .= "\033[42m"; break;
+				case 'yellow-bg':  $ret .= "\033[43m"; break;
+				case 'blue-bg':    $ret .= "\033[44m"; break;
+				case 'magenta-bg': $ret .= "\033[45m"; break;
+				case 'cyan-bg':    $ret .= "\033[46m"; break;
+				case 'white-bg':   $ret .= "\033[47m"; break;
+				case 'reverse':    $ret .= "\033[7m";  break;
+				case 'reset':      $ret .= "\033[0m";  break;
+				default:
+					throw new InvalidArgumentException('Unrecognised colour: '.$c);
+			}
+		}
+		return $ret;
+	}
+
 	protected function pass()
 	{
 		++$this->tests;
 		++$this->passed;
-		echo ".";
+		echo $this->colour('bold', 'green') . "." . $this->colour('reset') . $this->postTestWhitespace();
 	}
 
 	protected function fail($test_id, $expected, $actual)
@@ -49,7 +81,17 @@ class DataTester
 			'expected' => $expected,
 			'actual' => $actual,
 		);
-		echo "F";
+		echo $this->colour('bold', 'white', 'red-bg') . "F" . $this->colour('reset') . $this->postTestWhitespace();
+	}
+
+	protected function postTestWhitespace()
+	{
+		if (($this->tests % 40) == 0) {
+			return "\n";
+		} elseif (($this->tests % 10) == 0) {
+			return " ";
+		}
+		return '';
 	}
 
 	protected function getData($test_id)
@@ -120,12 +162,10 @@ class DataTester
 					} else {
 						$this->fail($test_id, $outs[$k], $result);
 					}
-					return false;
 				}
 			} catch (\Exception $e) {
 				if (!isset($errs[$k])) {
 					$this->fail($test_id, $outs[$k], '<'.get_class($e).': '.$e->getMessage().'>');
-					return false;
 				} else {
 					// TODO: check exception class/message
 					$this->pass();
@@ -141,11 +181,6 @@ class DataTester
 		do {
 			$result = $this->runTest($test_id);
 			++$test_id;
-			if (($this->tests % 40) == 0) {
-				echo "\n";
-			} elseif (($this->tests % 10) == 0) {
-				echo " ";
-			}
 		} while ($result !== static::NO_TEST);
 	}
 
@@ -155,25 +190,41 @@ class DataTester
 		$this->passed = 0;
 		$this->failed = 0;
 
+		if ($this->colour === null) {
+			$this->colour = defined("STDOUT") && posix_isatty(STDOUT)
+		}
+
 		if (!is_null($this->test_id)) {
 			$this->runTest($this->test_id);
 		} else {
 			$this->runTests();
 		}
 
-		echo "\n\n";
-		printf("%4d tests run:\n", $this->tests);
-		printf("  %4d passed\n", $this->passed);
-		printf("  %4d failed\n", $this->failed);
+		print "\n";
 
 		if ($this->failures && $this->show_failures) {
 			print "\n";
 			foreach ($this->failures as $failure) {
 				print str_repeat('-', 72) . "\n";
-				printf("Test %04d failed\n", $failure['test_id']);
-				print "Expected:\n{$failure['expected']}\n";
-				print "Actual:\n{$failure['actual']}\n";
+				printf("%sTest %04d %sfailed%s\n\n", $this->colour('bold'), $failure['test_id'], $this->colour('bold', 'red'), $this->colour('reset'));
+				printf("%sExpected:%s\n%s\n", $this->colour('bold'), $this->colour('reset'), $failure['expected']);
+				printf("%sActual:%s\n%s\n", $this->colour('bold'), $this->colour('reset'), $failure['actual']);
 			}
+			print str_repeat('-', 72) . "\n";
+		}
+
+		print "\n";
+
+		$all_state = '';
+		if (!$this->failed) {
+			$all_state = ', all passed';
+		} elseif (!$this->passed) {
+			$all_state = ', all failed';
+		}
+		printf("%s%4d tests run%s\n%s", $this->colour($this->failed ? 'red' : 'green', 'reverse'), $this->tests, $all_state, $this->colour('reset'));
+		if ($this->failed && $this->passed) {
+			printf("  %s%4d passed%s\n",  $this->colour('green'),       $this->passed, $this->colour('reset'));
+			printf("  %s%4d failed%s\n",  $this->colour('bold', 'red'), $this->failed, $this->colour('reset'));
 		}
 	}
 
