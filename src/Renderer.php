@@ -29,6 +29,17 @@ class Renderer
 	}
 
 	/**
+	 * Internal helper function to decide if a given value is an array with only
+	 * numeric indexes.
+	 *
+	 * @param mixed $v  The value to test
+	 * @return bool
+	 */
+	protected static function is_numeric_array($v) {
+		return is_array($v) && array_values($v) === $v;
+	}
+
+	/**
 	 * Internal helper function to create a nested context.
 	 *
 	 * @param mixed  $new_values   The data for the new context
@@ -193,7 +204,8 @@ class Renderer
 			// falsy values -> empty string
 			return '';
 		}
-		if (is_array($section) || $section instanceof Traversable) {
+		// assume that Traversable items are NOT to be treated like associative arrays
+		if (static::is_numeric_array($section) || $section instanceof Traversable) {
 			// iterate over the item, rendering each time
 			$output = '';
 			foreach ($section as $item) {
