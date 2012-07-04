@@ -76,24 +76,55 @@ class DataTester
 		} else {
 			$tpls = array($testdata['tpl']);
 		}
-		foreach ($tpls as $template_string) {
+		if (isset($testdata['dataset'])) {
+			$datas = $testdata['dataset'];
+		} else {
+			$datas = array($testdata['data']);
+		}
+		if (is_array($testdata['out'])) {
+			$outs = $testdata['out'];
+		} else {
+			$outs = array($testdata['out']);
+		}
+		if (!isset($testdata['err'])) {
+			$errs = array(null);
+		} elseif (is_array($testdata['err'])) {
+			$errs = $testdata['err'];
+		} else {
+			$errs = array($testdata['err']);
+		}
+		$m = max(count($tpls), count($datas), count($outs), count($errs));
+		while (count($tpls) < $m) {
+			$tpls[] = end($tpls);
+		}
+		while (count($datas) < $m) {
+			$datas[] = end($datas);
+		}
+		while (count($outs) < $m) {
+			$outs[] = end($outs);
+		}
+		while (count($errs) < $m) {
+			$errs[] = end($errs);
+		}
+
+		foreach ($tpls as $k => $template_string) {
 			try {
 				$tpl = \Mustache\Template::fromTemplateString($template_string);
 				$rdr = TestMustacheRenderer::create($tpl);
-				$result = $rdr->render($testdata['data']);
-				if (!isset($testdata['err']) && $result === $testdata['out']) {
+				$result = $rdr->render($datas[$k]);
+				if (!isset($errs[$k]) && $result === $outs[$k]) {
 					$this->pass();
 				} else {
-					if (isset($testdata['err'])) {
+					if (isset($errs[$k])) {
 						$this->fail($test_id, '<error>', $result);
 					} else {
-						$this->fail($test_id, $testdata['out'], $result);
+						$this->fail($test_id, $outs[$k], $result);
 					}
 					return false;
 				}
 			} catch (\Exception $e) {
-				if (!isset($testdata['err'])) {
-					$this->fail($test_id, $testdata['out'], '<'.get_class($e).': '.$e->getMessage().'>');
+				if (!isset($errs[$k])) {
+					$this->fail($test_id, $outs[$k], '<'.get_class($e).': '.$e->getMessage().'>');
 					return false;
 				} else {
 					// TODO: check exception class/message
