@@ -23,7 +23,7 @@ class DataTester
 	protected $failed = 0;
 	protected $failures = array();
 	protected $show_failures = false;
-	protected $colour = true;
+	protected $colour = null;
 
 	const NO_TEST = 'no_test';
 	const NO_DATA = 'no_data';
@@ -191,7 +191,7 @@ class DataTester
 		$this->failed = 0;
 
 		if ($this->colour === null) {
-			$this->colour = defined("STDOUT") && posix_isatty(STDOUT)
+			$this->colour = defined("STDOUT") && function_exists('posix_isatty') && posix_isatty(STDOUT);
 		}
 
 		if (!is_null($this->test_id)) {
